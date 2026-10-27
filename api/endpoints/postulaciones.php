@@ -64,7 +64,7 @@ switch ($method) {
             if ($accion === 'estado') {
                 $postulacion->changeState([
                     'id'              => trim($_PUT['id'] ?? ''),
-                    'estado'          => trim($_PUT['estado'] ?? ''),
+                    'estado_postulacion' => trim($_PUT['estado_postulacion'] ?? ''),
                     'comentario'      => trim($_PUT['comentario'] ?? ''),
                     'actualizado_por' => trim($_PUT['actualizado_por'] ?? '')
                 ]);

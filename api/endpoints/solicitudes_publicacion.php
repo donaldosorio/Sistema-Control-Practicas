@@ -18,7 +18,7 @@ switch ($method) {
     case 'GET':
         $id         = trim($_GET['id'] ?? '');
         $usuario_id = trim($_GET['usuario_id'] ?? '');
-        $estado     = trim($_GET['estado'] ?? '');
+        $estado_solicitud = trim($_GET['estado_solicitud'] ?? '');
 
         try {
             $solicitud = new SolicitudesPublicacion($connection, $response);
@@ -26,8 +26,8 @@ switch ($method) {
                 $solicitud->findById((int)$id);
             } elseif (!empty($usuario_id)) {
                 $solicitud->findByUsuario((int)$usuario_id);
-            } elseif (!empty($estado)) {
-                $solicitud->findByEstado($estado);
+            } elseif (!empty($estado_solicitud)) {
+                $solicitud->findByEstado($estado_solicitud);
             } else {
                 $solicitud->findAll();
             }
@@ -63,7 +63,7 @@ switch ($method) {
             if ($accion === 'revisar') {
                 $solicitud->review([
                     'id'               => trim($_PUT['id'] ?? ''),
-                    'estado'           => trim($_PUT['estado'] ?? ''),
+                    'estado_solicitud' => trim($_PUT['estado_solicitud'] ?? ''),
                     'comentario_admin' => trim($_PUT['comentario_admin'] ?? ''),
                     'revisado_por'     => trim($_PUT['revisado_por'] ?? '')
                 ]);

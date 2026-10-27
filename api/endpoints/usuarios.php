@@ -74,7 +74,7 @@ switch ($method) {
             'carnet'         => trim($_PUT['carnet'] ?? ''),
             'telefono'       => trim($_PUT['telefono'] ?? ''),
             'biografia'      => trim($_PUT['biografia'] ?? ''),
-            'estado'         => trim($_PUT['estado'] ?? 'activo')
+            'estado_cuenta'  => trim($_PUT['estado_cuenta'] ?? 'activo')
         ];
 
         try {

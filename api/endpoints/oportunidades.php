@@ -2,10 +2,17 @@
 
 require_once __DIR__ . "/../models/oportunidades.php";
 require_once __DIR__ . "/../core/connection.php";
+require_once __DIR__ . "/../core/auth-middleware.php";
 
 $connection = Connection::load();
 $response   = new Response();
 $method     = $_SERVER["REQUEST_METHOD"];
+
+# GET: cualquier usuario logueado. POST/PUT/DELETE: solo administrador (2) o reclutador (3).
+# requireAuth corta con error si no hay sesión o no tiene el rol, y en métodos de escritura valida el CSRF.
+$auth_data = requireAuth($method === 'GET' ? [] : [2, 3]);
+
+
 
 # PHP no llena $_PUT / $_DELETE: se leen del cuerpo (x-www-form-urlencoded)
 if ($method === 'PUT') {
@@ -50,7 +57,7 @@ switch ($method) {
             'ubicacion'         => trim($_POST['ubicacion'] ?? ''),
             'fecha_publicacion' => trim($_POST['fecha_publicacion'] ?? ''),
             'fecha_cierre'      => trim($_POST['fecha_cierre'] ?? ''),
-            'creado_por'        => trim($_POST['creado_por'] ?? '')
+            'creado_por'        => $auth_data['id'] # sale de la cookie, no del formulario
         ];
 
         try {
@@ -74,7 +81,7 @@ switch ($method) {
             'ubicacion'         => trim($_PUT['ubicacion'] ?? ''),
             'fecha_publicacion' => trim($_PUT['fecha_publicacion'] ?? ''),
             'fecha_cierre'      => trim($_PUT['fecha_cierre'] ?? ''),
-            'estado'            => trim($_PUT['estado'] ?? 'activa'),
+            'estado_oportunidad' => trim($_PUT['estado_oportunidad'] ?? 'activa'),
             'visto'             => trim($_PUT['visto'] ?? '0')
         ];
 
