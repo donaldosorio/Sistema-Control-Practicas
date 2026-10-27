@@ -16,7 +16,7 @@ public function __construct()
         try {
             $dsn = "mysql:host=" . HOST_DB . ";dbname=" . DATABASE . ";charset=" . CHARSET;
             parent::__construct($dsn, USER_DB, PASSWORD_DB);
-            $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Todo error lanza PDOException
             $this->setAttribute(PDO::ATTR_STATEMENT_CLASS, [AuditedPDOStatement::class, [$this]]);
         } catch (PDOException $e) {
             Response::error("Ocurrio un error", -1, 400);
