@@ -1,0 +1,188 @@
+<?php
+
+class Notificaciones {
+    private Connection $connection;
+    private Response $response;
+    public function __construct(Connection $connection, Response $response){
+        $this->connection = $connection;
+        $this->response = $response;
+    }
+
+    # Mostrar las últimas notificaciones de todos los usuarios
+    public function findAll(){
+        try {
+            $stmt = $this->connection->prepare("SELECT n.id, n.usuario_id, n.titulo, n.mensaje, n.leido, n.fecha_creacion
+                            FROM notificaciones n
+                            WHERE n.estado = 1 ORDER BY n.fecha_creacion DESC LIMIT 100");
+            $stmt->execute();
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $this->response->success($result);
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
+
+    # Filtrar por id
+    public function findById(int $id){
+        if ($id <= 0) {
+            $this->response->error("El ID es invalido");
+        }
+        try {
+            $stmt = $this->connection->prepare("SELECT n.id, n.usuario_id, n.titulo, n.mensaje, n.leido, n.fecha_creacion
+                            FROM notificaciones n
+                            WHERE n.estado = 1 AND n.id = ?");
+            $stmt->execute([$id]);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$result) {
+                $this->response->error("Notificación no encontrada");
+            }
+
+            $this->response->success($result);
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
+
+    # Bandeja de un usuario; $soloNoLeidas = true para el contador de la campana
+    public function findByUsuario(int $usuario_id, bool $soloNoLeidas = false){
+        if ($usuario_id <= 0) {
+            $this->response->error("El ID de usuario es invalido");
+        }
+        try {
+            $query = "SELECT n.id, n.usuario_id, n.titulo, n.mensaje, n.leido, n.fecha_creacion
+                            FROM notificaciones n
+                            WHERE n.estado = 1 AND n.usuario_id = ?";
+            if ($soloNoLeidas) {
+                $query .= " AND n.leido = 0";
+            }
+            $query .= " ORDER BY n.fecha_creacion DESC";
+
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute([$usuario_id]);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $this->response->success($result);
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
+
+    # Crear notificación (nace como no leída)
+    public function add(array $arrayData) {
+        $usuario_id = (int)($arrayData["usuario_id"] ?? 0);
+        $data = $this->validate($arrayData);
+
+        if ($usuario_id <= 0) {
+            $this->response->error("El usuario es obligatorio");
+        }
+
+        try {
+            $stmt = $this->connection->prepare("SELECT id FROM usuarios WHERE id = ? AND estado = 1");
+            $stmt->execute([$usuario_id]);
+            if (!$stmt->fetch(PDO::FETCH_ASSOC)) {
+                $this->response->error("El usuario no existe");
+            }
+
+            $query = "INSERT INTO notificaciones (usuario_id, titulo, mensaje) VALUES (?, ?, ?)";
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute([$usuario_id, $data['titulo'], $data['mensaje']]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->response->error("No se pudo crear la notificación");
+            }
+
+            $this->response->success("Notificación creada con éxito");
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
+
+    # Actualizar título, mensaje y leído (el destinatario no se cambia)
+    public function update(array $arrayData){
+        $id    = (int)($arrayData["id"] ?? 0);
+        $leido = (int)($arrayData["leido"] ?? 0) === 1 ? 1 : 0;
+
+        if ($id <= 0) {
+            $this->response->error("El ID es invalido");
+        }
+
+        $data = $this->validate($arrayData);
+
+        try {
+            $query = "UPDATE notificaciones SET titulo = ?, mensaje = ?, leido = ? WHERE id = ? AND estado = 1";
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute([$data['titulo'], $data['mensaje'], $leido, $id]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->response->error("Notificación no encontrada o sin cambios");
+            }
+
+            $this->response->success("Notificación actualizada correctamente");
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
+
+    # Marcar como leídas todas las de un usuario
+    public function markAllRead(int $usuario_id){
+        if ($usuario_id <= 0) {
+            $this->response->error("El ID de usuario es invalido");
+        }
+
+        try {
+            $query = "UPDATE notificaciones SET leido = 1 WHERE usuario_id = ? AND leido = 0 AND estado = 1";
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute([$usuario_id]);
+
+            $this->response->success("Notificaciones marcadas como leídas");
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
+
+    # Eliminar notificación (borrado lógico)
+    public function delete(int $id){
+        if ($id <= 0) {
+            $this->response->error("El ID es invalido");
+        }
+
+        try {
+            $query = "UPDATE notificaciones SET estado = 0 WHERE id = ? AND estado = 1";
+            $stmt = $this->connection->prepare($query);
+            $stmt->execute([$id]);
+
+            if ($stmt->rowCount() === 0) {
+                $this->response->error("No se encontro el ID o ya esta inactivo.");
+            }
+
+            $this->response->success("Notificación eliminada con éxito");
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
+
+    private function validate(array $arrayData): array {
+        $titulo  = trim($arrayData["titulo"] ?? '');
+        $mensaje = trim($arrayData["mensaje"] ?? '');
+
+        if (mb_strlen($titulo) < 2 || mb_strlen($titulo) > 150) {
+            $this->response->error("El título debe tener entre 2 y 150 caracteres");
+        }
+
+        if (mb_strlen($mensaje) < 2) {
+            $this->response->error("El mensaje debe tener al menos 2 caracteres");
+        }
+
+        return [
+            'titulo'  => $titulo,
+            'mensaje' => $mensaje,
+        ];
+    }
+}
