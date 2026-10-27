@@ -36,7 +36,7 @@ function requireAuth(int|array $roles = [])
     $rolesUsuario = explode(',', $data['roles']);
     $esValido = false;
     foreach ($rolesUsuario as $rolUsuario) {
-        if (in_array(intval($rolUsuario), $roles, true)) {
+        if (in_array(intval($rolUsuario), (array)$roles, true)) {
             $esValido = true;
             break;
         }
