@@ -21,8 +21,7 @@ switch ($method) {
             'username'  => $auth_data['username'],
             'name'      => $auth_data['name'],
             'roles'     => $auth_data['roles'],
-            'isAdmin'   => $auth_data['isAdmin'],
-            'csrfToken' => csrfToken(),
+            'isAdmin'   => $auth_data['isAdmin']
         ]);
         break;
 
