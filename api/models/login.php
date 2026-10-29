@@ -86,8 +86,7 @@ class Login {
                 'username'  => $payload['username'],
                 'name'      => $payload['name'],
                 'roles'     => $payload['roles'],
-                'isAdmin'   => $payload['isAdmin'],
-                'csrfToken' => csrfToken(),
+                'isAdmin'   => $payload['isAdmin']
             ], "Logueado exitosamente");
         } catch (PDOException $e) {
             Response::error("Error");
