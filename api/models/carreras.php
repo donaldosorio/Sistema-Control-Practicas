@@ -7,9 +7,20 @@ class Carreras {
         $this->connection = $connection;
         $this->response = $response;
     }
-
+    public function findAll(int $institucion_id){
+        try {
+            $stmt = $this->connection->prepare("SELECT c.nombre
+                            FROM carreras c.estado = 1  AND c.institucion_id = ? ORDER BY i.nombre, c.nombre");
+            $stmt->execute([$institucion_id]);
+            $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $this->response->success($result);
+        } catch (PDOException $e) {
+            Response::error("Error");
+            //Response::debugError($e);
+        }
+    }
     # Mostrar todas las carreras
-    public function findAll(){
+    public function findAllAfterRegister(){
         try {
             $stmt = $this->connection->prepare("SELECT c.id, c.institucion_id, i.nombre AS institucion, c.nombre, c.codigo, c.creado_en
                             FROM carreras c

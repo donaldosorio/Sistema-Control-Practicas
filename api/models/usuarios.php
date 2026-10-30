@@ -134,12 +134,12 @@ class Usuarios {
         $cifrada = password_hash($password, PASSWORD_DEFAULT);
 
         try {
-            $query = "INSERT INTO usuarios (username, nombre, apellido, email, password_hash, rol_id, institucion_id, carrera_id, carnet, telefono, biografia)
+            $query = "INSERT INTO usuarios (username, nombre, apellido, email, password_hash, institucion_id, carrera_id, carnet, telefono, biografia)
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $stmt = $this->connection->prepare($query);
             $stmt->execute([
                 $data['username'], $data['nombre'], $data['apellido'], $data['email'], $cifrada,
-                $data['rol_id'], $data['institucion_id'], $data['carrera_id'],
+                $data['institucion_id'], $data['carrera_id'],
                 $data['carnet'], $data['telefono'], $data['biografia']
             ]);
 
@@ -173,13 +173,13 @@ class Usuarios {
         $data = $this->validate($arrayData);
 
         try {
-            $query = "UPDATE usuarios SET username = ?, nombre = ?, apellido = ?, email = ?, rol_id = ?, institucion_id = ?,
+            $query = "UPDATE usuarios SET username = ?, nombre = ?, apellido = ?, email = ?, institucion_id = ?,
                              carrera_id = ?, carnet = ?, telefono = ?, biografia = ?, estado_cuenta = ?
                       WHERE id = ? AND estado = 1";
             $stmt = $this->connection->prepare($query);
             $stmt->execute([
                 $data['username'], $data['nombre'], $data['apellido'], $data['email'],
-                $data['rol_id'], $data['institucion_id'], $data['carrera_id'],
+                $data['institucion_id'], $data['carrera_id'],
                 $data['carnet'], $data['telefono'], $data['biografia'], $estado_cuenta, $id
             ]);
 

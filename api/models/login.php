@@ -33,7 +33,8 @@ class Login {
                       FROM usuarios u
                       LEFT JOIN asignaciones_roles ar ON ar.id_usuario = u.id AND ar.estado = 1
                       WHERE $columna = ? AND u.estado = 1 AND u.estado_cuenta = 'activo'
-                      GROUP BY u.id";
+                      GROUP BY u.id"
+                      ;
             $stmt = $this->connection->prepare($query);
             $stmt->execute([$identificador]);
             $result = $stmt->fetch(PDO::FETCH_ASSOC);

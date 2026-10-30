@@ -55,6 +55,7 @@ CREATE TABLE carreras (
     codigo VARCHAR(30) NULL,
     estado TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1: activo, 0: inactivo (soft delete)',
     creado_en DATETIME DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_id_institucion_carreta (institucion_id),
     CONSTRAINT fk_carreras_institucion FOREIGN KEY (institucion_id)
         REFERENCES instituciones(id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT uk_inst_carrera UNIQUE (institucion_id, nombre)
@@ -67,24 +68,19 @@ CREATE TABLE usuarios (
     apellido VARCHAR(100) NOT NULL,
     email VARCHAR(150) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    rol_id INT NOT NULL,
     institucion_id INT NULL COMMENT 'FK a la institución/empresa registrada',
     carrera_id INT NULL COMMENT 'Aplica para estudiantes',
     carnet VARCHAR(30) NULL COMMENT 'Aplica para estudiantes',
     telefono VARCHAR(30) NULL,
     biografia TEXT NULL,
     autorizado_publicar TINYINT(1) NOT NULL DEFAULT 0 COMMENT '0: No autorizado a publicar ofertas, 1: Autorizado por admin',
-    estado_cuenta ENUM('activo', 'suspendido') NOT NULL DEFAULT 'activo' COMMENT 'La baja es estado = 0',
     estado TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1: activo, 0: inactivo (soft delete)',
     fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_usuarios_rol FOREIGN KEY (rol_id)
-        REFERENCES roles(id) ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT fk_usuarios_institucion FOREIGN KEY (institucion_id)
         REFERENCES instituciones(id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT fk_usuarios_carrera FOREIGN KEY (carrera_id)
         REFERENCES carreras(id) ON DELETE SET NULL ON UPDATE CASCADE,
     INDEX idx_usuarios_email (email),
-    INDEX idx_usuarios_rol (rol_id),
     INDEX idx_usuarios_autorizado (autorizado_publicar)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
